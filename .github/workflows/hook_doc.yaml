@@ -1,0 +1,25 @@
+name: Doc
+
+on:
+  repository_dispatch:
+    types: [update_doc]
+
+jobs:
+  generate_doc:
+    name: generate_doc
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: auto generate doc
+          file_pattern: ./docs/overview.md
+
+      - name: write new docs
+        env:
+          OVERVIEW: ${{ github.event.client_payload.content }}
+        run: |
+          base64 --d <<< "${OVERVIEW}" | xz -d > ./overview.md
