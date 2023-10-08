@@ -8,18 +8,26 @@ jobs:
   generate_doc:
     name: generate_doc
     runs-on: ubuntu-latest
+    env:
+      PATH_OVERVIEW: './overview.md'
 
     permissions:
       contents: write
 
     steps:
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Check out code
+        uses: actions/checkout@v4
         with:
-          commit_message: auto generate doc
-          file_pattern: ./docs/overview.md
+          ref: ${{ github.head_ref }}
 
-      - name: write new docs
+      - name: Write new overview
         env:
           OVERVIEW: ${{ github.event.client_payload.content }}
         run: |
-          base64 --d <<< "${OVERVIEW}" | xz -d > ./overview.md
+          base64 --d <<< "${OVERVIEW}" | xz -d > "${{ env.PATH_OVERVIEW }}"
+
+      - name: Commit into master
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: auto generate doc
+          file_pattern: ${{ env.PATH_OVERVIEW }}
